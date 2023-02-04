@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">MobileComputing Project</string>
+    <string name="app_name">Reminderoo</string>
+    <string name="search">Search</string>
+    <string name="account">Account</string>
+    <string name="edit_icon">Edit icon</string>
+    <string name="profile">Profile</string>
+    <string name="change_username">Change username</string>
 </resources>
