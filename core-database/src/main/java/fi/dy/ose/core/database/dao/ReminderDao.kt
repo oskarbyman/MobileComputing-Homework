@@ -10,7 +10,10 @@ interface ReminderDao {
     suspend fun insertOrUpdate(reminder: ReminderEntity)
 
     @Query("SELECT * FROM reminders WHERE reminderId LIKE :reminderId")
-    fun findOne(reminderId: Long): Flow<ReminderEntity>
+    fun findOne(reminderId: Long):ReminderEntity
+
+    @Query("SELECT * FROM reminders")
+    suspend fun loadAll(): List<ReminderEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(reminder: ReminderEntity)

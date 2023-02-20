@@ -2,36 +2,47 @@ package fi.dy.ose.mobilecomputing.ui.home.reminderCard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fi.dy.ose.mobilecomputing.data.entity.Reminder
+import dagger.hilt.android.lifecycle.HiltViewModel
+import fi.dy.ose.code.domain.repository.ReminderRepository
+import fi.dy.ose.code.domain.entity.Reminder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import javax.inject.Inject
 
-class ReminderCardListViewModel : ViewModel() {
+@HiltViewModel
+class ReminderCardListViewModel @Inject constructor(
+    private val reminderRepository: ReminderRepository
+): ViewModel() {
     private val _state = MutableStateFlow(ReminderCardViewState())
 
     val state: StateFlow<ReminderCardViewState>
         get() = _state
 
-    init {
-        val list = mutableListOf<Reminder>()
-        for (x in 1..20) {
-            list.add(
-                Reminder(
-                    id = x.toLong(),
-                    categoryId = x.toLong(),
-                    title = "$x reminder",
-                    note = "Remember to do $x",
-                    date = LocalDateTime.now()
-                )
-            )
-        }
+    private suspend fun _reloadReminders() {
+        val list: List<Reminder> = reminderRepository.loadReminders()
+        val listButSorted: List<Reminder> = list.sortedByDescending { it.reminder_time }
+        _state.value = ReminderCardViewState(
+            reminders = listButSorted
+        )
+
+    }
+
+    fun reloadReminders() {
         viewModelScope.launch {
-            _state.value = ReminderCardViewState(
-                reminders = list
-            )
+            _reloadReminders()
         }
+    }
+
+    fun deleteReminder(reminderId: Long) {
+        viewModelScope.launch {
+            reminderRepository.deleteReminder(reminderId)
+            _reloadReminders()
+        }
+    }
+
+    init {
+        reloadReminders()
     }
 }
 

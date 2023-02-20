@@ -4,13 +4,16 @@ import android.content.SharedPreferences
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import fi.dy.ose.mobilecomputing.MobileComputingAppState
 import fi.dy.ose.mobilecomputing.rememberMobileComputingAppState
 import fi.dy.ose.mobilecomputing.ui.home.Home
 import fi.dy.ose.mobilecomputing.ui.profile.Profile
-import fi.dy.ose.mobilecomputing.ui.reminder.Reminder
+import fi.dy.ose.mobilecomputing.ui.reminder.ReminderScreen
+import fi.dy.ose.mobilecomputing.ui.reminder.ReminderViewModel
 
 @Composable
 fun MobileComputingApp(
@@ -19,7 +22,7 @@ fun MobileComputingApp(
 ) {
     NavHost(
         navController = appState.navController,
-        startDestination = "login"
+        startDestination = "home"
     ) {
         composable(route = "login") {
             LoginScreen(navController = appState.navController, modifier = Modifier.fillMaxSize(), prefs = sharedPreferences)
@@ -27,8 +30,15 @@ fun MobileComputingApp(
         composable(route = "home") {
             Home(navController = appState.navController)
         }
-        composable(route = "reminder") {
-            Reminder(onBackPress = appState::navigateBack)
+        composable(
+            route = "reminder?reminderId={reminderId}",
+            arguments = listOf(navArgument("reminderId") {
+                defaultValue = null
+                type = NavType.StringType
+                nullable = true
+            })
+        ) { backStackEntry ->
+            ReminderScreen(navController = appState.navController, sharedPrefs = sharedPreferences, reminder_id = backStackEntry.arguments?.getString("reminderId")?.toLong())
         }
         composable(route = "profile") {
             Profile(sharedPreferences, appState::navigateBack)

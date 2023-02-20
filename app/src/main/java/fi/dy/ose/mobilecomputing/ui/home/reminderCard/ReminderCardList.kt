@@ -5,51 +5,65 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.lifecycle.viewmodel.compose.viewModel
-import fi.dy.ose.mobilecomputing.data.entity.Reminder
+import fi.dy.ose.code.domain.entity.Reminder
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import fi.dy.ose.mobilecomputing.R
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+
 @Composable
 fun ReminderCardList(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: ReminderCardListViewModel = hiltViewModel()
 ) {
-    val viewModel: ReminderCardListViewModel = viewModel()
     val viewState by viewModel.state.collectAsState()
 
-    Column(modifier = modifier) {
-        ReminderList(
-            list = viewState.reminders
-        )
+    LaunchedEffect(key1 = Unit) {
+        viewModel.reloadReminders()
     }
+
+
+    ReminderList(
+        list = viewState.reminders,
+        navController = navController,
+        viewModel = viewModel
+    )
 }
 
 @Composable
 private fun ReminderList(
-    list: List<Reminder>
+    list: List<Reminder>,
+    navController: NavController,
+    viewModel: ReminderCardListViewModel
 ) {
+
     LazyColumn(
         contentPadding = PaddingValues(0.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        items(list) { reminder ->
-            ReminderListItem(
-                reminder = reminder,
-                onClick = {},
-                modifier = Modifier.fillParentMaxWidth()
-            )
+
+            items(list) { reminder ->
+                ReminderListItem(
+                    reminder = reminder,
+                    onClick = {},
+                    modifier = Modifier.fillParentMaxWidth(),
+                    navController = navController,
+                    viewModel = viewModel
+                )
+
         }
     }
 }
@@ -58,10 +72,12 @@ private fun ReminderList(
 private fun ReminderListItem(
     reminder: Reminder,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: ReminderCardListViewModel
 ) {
     ConstraintLayout(modifier = modifier.clickable { onClick() }) {
-        val (divider, reminderTitle, reminderCategory, icon, date) = createRefs()
+        val (divider, reminderTitle, reminderCategory, editIcon, deleteIcon, date) = createRefs()
         Divider(
             Modifier.constrainAs(divider) {
                 top.linkTo(parent.top)
@@ -77,7 +93,7 @@ private fun ReminderListItem(
             modifier = Modifier.constrainAs(reminderTitle) {
                 linkTo(
                     start = parent.start,
-                    end = icon.start,
+                    end = editIcon.start,
                     startMargin = 24.dp,
                     endMargin = 16.dp,
                     bias = 0f
@@ -86,15 +102,15 @@ private fun ReminderListItem(
                 width = Dimension.preferredWrapContent
             }
         )
-        //Category
+        //Creator
         Text(
-            text = reminder.categoryId.toString(),
+            text = reminder.creator_id,
             maxLines = 1,
             style = MaterialTheme.typography.subtitle1,
             modifier = Modifier.constrainAs(reminderCategory) {
                 linkTo(
                     start = parent.start,
-                    end = icon.start,
+                    end = editIcon.start,
                     startMargin = 24.dp,
                     endMargin = 8.dp,
                     bias = 0f
@@ -107,8 +123,8 @@ private fun ReminderListItem(
         //datetime
         Text(
             text = when {
-                reminder.date != null -> { reminder.date.formatToString() }
-                else -> LocalDateTime.now().formatToString()
+                reminder.reminder_time != null -> { reminder.reminder_time.formatToString() }
+                else -> "Error"
             },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -116,7 +132,7 @@ private fun ReminderListItem(
             modifier = Modifier.constrainAs(date) {
                 linkTo(
                     start = reminderCategory.end,
-                    end = icon.start,
+                    end = editIcon.start,
                     startMargin = 8.dp,
                     endMargin = 16.dp,
                     bias = 0f
@@ -128,14 +144,14 @@ private fun ReminderListItem(
         )
         //icon
         IconButton(
-            onClick = {/*TODO*/},
+            onClick = { navController.navigate("reminder?reminderId=${reminder.reminderId}") },
             modifier = Modifier
                 .size(50.dp)
                 .padding(6.dp)
-                .constrainAs(icon) {
+                .constrainAs(editIcon) {
                     top.linkTo(parent.top, 10.dp)
                     bottom.linkTo(parent.bottom, 10.dp)
-                    end.linkTo(parent.end)
+                    end.linkTo(deleteIcon.start)
                 }
         ) {
             Icon(
@@ -143,12 +159,29 @@ private fun ReminderListItem(
                 contentDescription = stringResource(R.string.edit_icon)
             )
         }
+        //icon
+        IconButton(
+            onClick = {viewModel.deleteReminder(reminder.reminderId)},
+            modifier = Modifier
+                .size(50.dp)
+                .padding(6.dp)
+                .constrainAs(deleteIcon) {
+                    top.linkTo(parent.top, 10.dp)
+                    bottom.linkTo(parent.bottom, 10.dp)
+                    end.linkTo(parent.end)
+                }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.delete)
+            )
+        }
 
     }
 }
 
 private fun LocalDateTime.formatToString(): String {
-    val pattern = "uuuu-MM-dd HH-mm-ss"
+    val pattern = "uuuu-MM-dd HH:mm"
     val formatter = DateTimeFormatter.ofPattern(pattern)
     return this.format(formatter)
 }

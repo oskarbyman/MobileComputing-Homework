@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -50,6 +52,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core-data"))
+    implementation(project(":core-database"))
+    implementation(project(":core-domain"))
 
     implementation(androidx.core.ktx)
     implementation(androidx.lifecycle.runtimeKtx)
@@ -67,6 +72,10 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.1.1")
     debugImplementation("androidx.compose.ui:ui-tooling:1.1.1")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.1.1")
+
+    implementation(androidx.navigation.hilt.compose)
+    implementation("com.google.dagger:hilt-android:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
     // Accompanist
     implementation("com.google.accompanist:accompanist-insets:0.23.1")
     // Navigation
@@ -77,4 +86,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     // Foundation
     implementation("androidx.compose.foundation:foundation:1.3.1")
+}
+
+kapt {
+    correctErrorTypes = true
 }

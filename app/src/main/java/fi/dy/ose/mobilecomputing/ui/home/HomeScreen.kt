@@ -1,10 +1,12 @@
 package fi.dy.ose.mobilecomputing.ui.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +43,7 @@ fun Home(
 }
 
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeContent(
     selectedCategory: Category,
@@ -80,7 +83,8 @@ fun HomeContent(
 //                onCategorySelected = onCategorySelected
 //            )
             ReminderCardList(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                navController = navController
             )
             
         }
@@ -105,7 +109,7 @@ private fun HomeAppBar(
         backgroundColor = backgroundColor,
         actions = {
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Filled.Search, contentDescription = stringResource(R.string.search))
+//                Icon(imageVector = Icons.Filled., contentDescription = stringResource(R.string.refresh))
 
             }
             IconButton(onClick = { navController.navigate(route = "profile") }) {

@@ -13,8 +13,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import dagger.hilt.android.AndroidEntryPoint
 import fi.dy.ose.mobilecomputing.ui.theme.MobileComputingProjectTheme
 
+@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
     lateinit var sharedPreferences: SharedPreferences
     var PREFS_KEY = "prefs"

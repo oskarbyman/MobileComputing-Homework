@@ -3,9 +3,13 @@ package fi.dy.ose.code.domain.entity
 import java.time.LocalDateTime
 
 data class Reminder(
-    val reminderId: Long = 0,
+    var reminderId: Long = 0,
     val title: String,
-    val categoryId: Long,
-    val note: String,
-    val date: LocalDateTime
+    val message: String,
+    val location_x: Float = 0.0F,
+    val location_y: Float = 0.0F,
+    val reminder_time: LocalDateTime,
+    val creation_time: LocalDateTime = LocalDateTime.now(),
+    val creator_id: String,
+    val reminder_seen: Boolean = false
 )

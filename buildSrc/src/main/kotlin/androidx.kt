@@ -4,7 +4,7 @@ object androidx {
         val ktx = "androidx.core:core-ktx:$version"
     }
     object compose {
-        private val version = "1.1.1"
+        private val version = "1.3.0"
         object ui {
             val ui = "androidx.compose.ui:ui:$version"
             val tooling = "androidx.compose.ui:ui-tooling-preview:$version"
@@ -15,6 +15,16 @@ object androidx {
     object lifecycle {
         private val version = "2.3.1"
         val runtimeKtx = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
+    }
+
+    object navigation {
+        private val version = "2.5.3"
+        val compose = "androidx.navigation:navigation-compose:$version"
+
+        object hilt {
+            private val version = "1.0.0"
+            val compose = "androidx.hilt:hilt-navigation-compose:$version"
+        }
     }
     object activity {
         private val version = "1.3.1"

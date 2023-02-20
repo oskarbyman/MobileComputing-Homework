@@ -14,8 +14,12 @@ import java.time.LocalDateTime
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     val reminderId: Long = 0,
-    val categoryId: Long,
     val title: String,
-    val note: String,
-    val date: LocalDateTime
+    val message: String,
+    val location_x: Float,
+    val location_y: Float,
+    val reminder_time: LocalDateTime,
+    val creation_time: LocalDateTime,
+    val creator_id: String,
+    val reminder_seen: Boolean
 )
