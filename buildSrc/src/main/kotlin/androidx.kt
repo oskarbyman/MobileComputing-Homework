@@ -1,4 +1,8 @@
 object androidx {
+    object work {
+        private val version = "2.8.0"
+        val ktx = "androidx.work:work-runtime-ktx:$version"
+    }
     object core {
         private val version = "1.7.0"
         val ktx = "androidx.core:core-ktx:$version"

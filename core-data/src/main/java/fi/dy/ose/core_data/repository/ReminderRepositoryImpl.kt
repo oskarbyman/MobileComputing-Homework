@@ -9,8 +9,8 @@ import javax.inject.Inject
 class ReminderRepositoryImpl @Inject constructor(
     private val reminderDataSource: ReminderDataSource
 ) : ReminderRepository {
-    override suspend fun addReminder(reminder: Reminder) {
-        reminderDataSource.addReminder(reminder)
+    override suspend fun addReminder(reminder: Reminder): Long {
+        return reminderDataSource.addReminder(reminder)
     }
 
     override suspend fun deleteReminder(reminderId: Long) {
@@ -23,5 +23,13 @@ class ReminderRepositoryImpl @Inject constructor(
 
     override suspend fun loadReminders(): List<Reminder> {
         return reminderDataSource.loadReminders()
+    }
+
+    override suspend fun loadSeenReminders(seen: Boolean): List<Reminder> {
+        return reminderDataSource.loadSeenReminders(seen)
+    }
+
+    override suspend fun setReminderSeen(reminderId: Long, seen: Boolean) {
+        reminderDataSource.setReminderSeen(reminderId, seen)
     }
 }

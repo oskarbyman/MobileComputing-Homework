@@ -1,5 +1,6 @@
 package fi.dy.ose.mobilecomputing.ui.home.reminderCard
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import fi.dy.ose.mobilecomputing.R
+import fi.dy.ose.mobilecomputing.data.entity.Category
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,24 +31,54 @@ fun ReminderCardList(
     navController: NavController,
     viewModel: ReminderCardListViewModel = hiltViewModel()
 ) {
+
     val viewState by viewModel.state.collectAsState()
+    val tabs = listOf<String>( "Occurred", "Upcoming", "All")
+    val selectedTab = remember { mutableStateOf("Occurred")}
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.reloadReminders()
+        viewModel.reloadReminders(selectedTab.value)
     }
 
 
-    ReminderList(
-        list = viewState.reminders,
-        navController = navController,
-        viewModel = viewModel
-    )
+        Column() {
+        val selectedIndex = tabs.indexOfFirst { it == selectedTab.value }
+        TabRow(
+            selectedTabIndex = 0,
+            indicator = emptyTabIndicator,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            tabs.forEachIndexed { index, tabName ->
+                Tab(
+                    selected = index == selectedIndex,
+                    onClick = {
+                        selectedTab.value = tabName
+                        viewModel.reloadReminders(tabName)
+                    }
+                ) {
+                    ChoiceChipContent(
+                        text = tabName,
+                        selected = index == selectedIndex,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp)
+                    )
+                }
+            }
+        }
+        ReminderList(
+            list = viewState.reminders,
+            navController = navController,
+            tabSelected = selectedTab.value,
+            viewModel = viewModel
+        )
+
+    }
 }
 
 @Composable
 private fun ReminderList(
     list: List<Reminder>,
     navController: NavController,
+    tabSelected: String,
     viewModel: ReminderCardListViewModel
 ) {
 
@@ -58,9 +90,10 @@ private fun ReminderList(
             items(list) { reminder ->
                 ReminderListItem(
                     reminder = reminder,
-                    onClick = {},
+                    onClick = { viewModel.setReminderAsSeen(reminder.reminderId) },
                     modifier = Modifier.fillParentMaxWidth(),
                     navController = navController,
+                    tabSelected = tabSelected,
                     viewModel = viewModel
                 )
 
@@ -73,6 +106,7 @@ private fun ReminderListItem(
     reminder: Reminder,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    tabSelected: String,
     navController: NavController,
     viewModel: ReminderCardListViewModel
 ) {
@@ -161,7 +195,7 @@ private fun ReminderListItem(
         }
         //icon
         IconButton(
-            onClick = {viewModel.deleteReminder(reminder.reminderId)},
+            onClick = {viewModel.deleteReminder(reminder.reminderId, tabName = tabSelected)},
             modifier = Modifier
                 .size(50.dp)
                 .padding(6.dp)
@@ -180,8 +214,36 @@ private fun ReminderListItem(
     }
 }
 
+@Composable
+private fun ChoiceChipContent(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = when {
+            selected -> MaterialTheme.colors.primary.copy(alpha = 0.08f)
+            else -> MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+        },
+        contentColor = when {
+            selected -> MaterialTheme.colors.primary
+            else -> MaterialTheme.colors.onSurface
+        },
+        shape = MaterialTheme.shapes.small,
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.body2,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
 private fun LocalDateTime.formatToString(): String {
     val pattern = "uuuu-MM-dd HH:mm"
     val formatter = DateTimeFormatter.ofPattern(pattern)
     return this.format(formatter)
 }
+
+private val emptyTabIndicator: @Composable (List<TabPosition>) -> Unit = {}

@@ -11,8 +11,8 @@ import javax.inject.Inject
 class ReminderDataSourceImpl @Inject constructor(
     private val reminderDao: ReminderDao
 ) : ReminderDataSource {
-    override suspend fun addReminder(reminder: Reminder) {
-        reminderDao.insertOrUpdate(reminder.toEntity())
+    override suspend fun addReminder(reminder: Reminder): Long {
+        return reminderDao.insertOrUpdate(reminder.toEntity())
     }
 
     override suspend fun deleteReminder(reminderId: Long) {
@@ -29,6 +29,29 @@ class ReminderDataSourceImpl @Inject constructor(
             .map {
                 it.fromEntity()
             }
+    }
+
+    override suspend fun loadSeenReminders(seen: Boolean): List<Reminder> {
+        return reminderDao.loadSeenReminders(seen)
+            .map {
+                it.fromEntity()
+            }
+    }
+
+    override suspend fun setReminderSeen(reminderId: Long, seen: Boolean) {
+        val oldReminder = loadReminder(reminderId)
+        val newReminder = Reminder(
+            reminderId = reminderId,
+            title = oldReminder.title,
+            message = oldReminder.message,
+            location_x = oldReminder.location_x,
+            location_y = oldReminder.location_y,
+            reminder_time = oldReminder.reminder_time,
+            creation_time = oldReminder.creation_time,
+            creator_id = oldReminder.creator_id,
+            reminder_seen = seen
+        )
+        reminderDao.update(newReminder.toEntity())
     }
 
     private fun Reminder.toEntity() = ReminderEntity(

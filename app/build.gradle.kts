@@ -55,6 +55,7 @@ dependencies {
     implementation(project(":core-data"))
     implementation(project(":core-database"))
     implementation(project(":core-domain"))
+    implementation(project(":core-worker"))
 
     implementation(androidx.core.ktx)
     implementation(androidx.lifecycle.runtimeKtx)
@@ -66,6 +67,7 @@ dependencies {
     implementation(androidx.room.common)
     implementation(androidx.room.runtime)
     implementation(androidx.biometric.biometric)
+    implementation(androidx.work.ktx)
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")

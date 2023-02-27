@@ -23,8 +23,9 @@ class HomeViewModel : ViewModel() {
     init {
         val categories = MutableStateFlow<List<Category>>(
             mutableListOf(
-                Category(1, "Upcoming"),
-                Category(2, "Previous")
+                Category(1, "Previous"),
+                Category(2, "Upcoming"),
+                Category(3, "All")
             )
         )
         viewModelScope.launch{
