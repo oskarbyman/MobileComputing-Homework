@@ -17,6 +17,10 @@ class NotificationHelper(val context: Context) {
     private val CHANNEL_ID = "reminder_id"
     private val NOTIFICATION_ID = 1
 
+    init {
+        createNotificationChannel()
+    }
+
     private fun createNotificationChannel() {
         val name = "ReminderChannel"
         val descriptionText = "Reminder channel for Reminderoo notifications"
@@ -29,7 +33,7 @@ class NotificationHelper(val context: Context) {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun notifyUserOfReminder(title:String, reminderTime: String, message: String) {
+    fun notifyUserOfReminder(title: String, reminderTime: String, message: String) {
 
         createNotificationChannel()
 
@@ -37,14 +41,16 @@ class NotificationHelper(val context: Context) {
         intent.setClassName(context, "fi.dy.ose.mobilecomputing.ui.MainActivity")
             .apply{
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("reminder_title", title)
+            putExtra("reminder_message", message)
         }
 
 
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_MUTABLE)
 
         val builder = NotificationCompat.Builder(
             context,
-            "reminders_id"
+            "reminder_id"
         )
             .setSmallIcon(R.drawable.ic_notification_icon)
             .setContentTitle("Reminder for $title at $reminderTime")

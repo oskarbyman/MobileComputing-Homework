@@ -88,6 +88,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     // Foundation
     implementation("androidx.compose.foundation:foundation:1.3.1")
+    // Maps
+    implementation("com.google.maps.android:maps-ktx:3.3.0")
+    implementation("com.google.maps.android:maps-utils-ktx:3.3.0")
+    implementation("com.google.android.gms:play-services-maps:18.0.0")
+    implementation("com.google.maps.android:android-maps-utils:2.2.3")
+    implementation("com.google.android.gms:play-services-location:18.0.0")
 }
 
 kapt {

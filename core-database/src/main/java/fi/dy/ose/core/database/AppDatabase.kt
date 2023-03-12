@@ -9,7 +9,7 @@ import fi.dy.ose.core.database.utils.LocalDateTimeConverter
 
 @Database(
     entities = [ReminderEntity::class],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(LocalDateTimeConverter::class)

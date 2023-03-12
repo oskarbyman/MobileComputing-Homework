@@ -1,5 +1,9 @@
 package fi.dy.ose.mobilecomputing.ui.home.reminderCard
 
+import android.content.ContentValues.TAG
+import android.location.Location
+import android.nfc.Tag
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 @HiltViewModel
 class ReminderCardListViewModel @Inject constructor(
@@ -21,23 +27,53 @@ class ReminderCardListViewModel @Inject constructor(
     val state: StateFlow<ReminderCardViewState>
         get() = _state
 
-    private suspend fun _reloadReminders(seen: Boolean, all: Boolean) {
-        var list: List<Reminder> = emptyList()
-        if (all) {
-            list = reminderRepository.loadReminders()
+    private suspend fun _reloadReminders(seen: Boolean, all: Boolean, location: Location?) {
+        val list: List<Reminder> = if (all) {
+            reminderRepository.loadReminders()
         } else if (seen) {
-            list = reminderRepository.loadSeenReminders(seen)
+            reminderRepository.loadSeenReminders(seen)
         } else {
-            list = reminderRepository.loadSeenReminders(seen)
+            reminderRepository.loadSeenReminders(seen)
         }
-        val listButSorted: List<Reminder> = list.sortedByDescending { it.reminder_time }
+        val filteredList = if (location != null) {
+            list.filter { reminder ->
+                reminder.location_y != null && reminder.location_x != null &&
+                        isWithinRadius(reminder.location_x, reminder.location_y, location, 100.0f)
+            }
+        } else if (all) {
+            list
+        } else {
+            list.filter { reminder ->
+                reminder.location_y == null && reminder.location_x == null
+            }
+        }
+        val listButSorted: List<Reminder> = filteredList.sortedByDescending { it.reminder_time }
         _state.value = ReminderCardViewState(
             reminders = listButSorted,
             tabs = listOf("Occurred", "Upcoming", "All")
         )
     }
 
-    fun reloadReminders(tabName: String) {
+    private fun isWithinRadius(reminderLatitude: Float?, reminderLongitude: Float?, location: Location, radius: Float): Boolean {
+        if (reminderLatitude == null || reminderLongitude == null) {
+            return false
+        }
+        val reminderLocation = Location("")
+        reminderLocation.latitude = reminderLatitude.toDouble()
+        reminderLocation.longitude = reminderLongitude.toDouble()
+        val distanceInMeters = location.distanceTo(reminderLocation)
+        Log.d(TAG, "Distance between points ($reminderLatitude,$reminderLongitude) and (${location.latitude},${location.longitude}) is ${distanceInMeters} = ${distanceInMeters <= radius}")
+        return distanceInMeters <= radius
+    }
+
+    private fun distanceInMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val earthRadius = 6371000.0 // meters
+        val x = (lon2 - lon1) * cos((lat1 + lat2) / 2)
+        val y = lat2 - lat1
+        return earthRadius * sqrt(x * x + y * y)
+    }
+
+    fun reloadReminders(tabName: String, location: Location?) {
         var seen: Boolean = true
         var all: Boolean = false
         if (tabName == "All") {
@@ -48,14 +84,14 @@ class ReminderCardListViewModel @Inject constructor(
             seen = false
         }
         viewModelScope.launch {
-            _reloadReminders(seen, all)
+            _reloadReminders(seen, all, location)
         }
     }
 
-    fun deleteReminder(reminderId: Long, tabName: String) {
+    fun deleteReminder(reminderId: Long, tabName: String, location: Location?) {
         viewModelScope.launch {
             reminderRepository.deleteReminder(reminderId)
-            reloadReminders(tabName)
+            reloadReminders(tabName, location)
         }
     }
 
@@ -66,7 +102,7 @@ class ReminderCardListViewModel @Inject constructor(
     }
 
     init {
-        reloadReminders("Upcoming")
+        reloadReminders("Upcoming", null)
     }
 }
 

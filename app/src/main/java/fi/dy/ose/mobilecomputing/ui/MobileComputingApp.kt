@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import fi.dy.ose.mobilecomputing.MobileComputingAppState
 import fi.dy.ose.mobilecomputing.rememberMobileComputingAppState
 import fi.dy.ose.mobilecomputing.ui.home.Home
+import fi.dy.ose.mobilecomputing.ui.maps.ReminderLocation
 import fi.dy.ose.mobilecomputing.ui.profile.Profile
 import fi.dy.ose.mobilecomputing.ui.reminder.ReminderScreen
 import fi.dy.ose.mobilecomputing.ui.reminder.ReminderViewModel
@@ -42,6 +43,9 @@ fun MobileComputingApp(
         }
         composable(route = "profile") {
             Profile(sharedPreferences, appState::navigateBack)
+        }
+        composable(route = "map") {
+            ReminderLocation(navController = appState.navController)
         }
     }
 }

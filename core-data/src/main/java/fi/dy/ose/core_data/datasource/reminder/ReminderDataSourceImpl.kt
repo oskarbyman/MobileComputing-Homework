@@ -3,9 +3,6 @@ package fi.dy.ose.core_data.datasource.reminder
 import fi.dy.ose.code.domain.entity.Reminder
 import fi.dy.ose.core.database.dao.ReminderDao
 import fi.dy.ose.core.database.entities.ReminderEntity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 class ReminderDataSourceImpl @Inject constructor(

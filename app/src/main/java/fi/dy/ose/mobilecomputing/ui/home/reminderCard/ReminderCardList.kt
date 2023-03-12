@@ -1,6 +1,6 @@
 package fi.dy.ose.mobilecomputing.ui.home.reminderCard
 
-import android.util.Log
+import android.location.Location
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +20,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import fi.dy.ose.mobilecomputing.R
-import fi.dy.ose.mobilecomputing.data.entity.Category
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,15 +28,25 @@ import java.time.format.DateTimeFormatter
 fun ReminderCardList(
     modifier: Modifier = Modifier,
     navController: NavController,
+    latitude: Float?,
+    longitude: Float?,
     viewModel: ReminderCardListViewModel = hiltViewModel()
 ) {
 
+    val location = if (latitude != null && longitude != null) {
+        Location("").apply {
+            this.latitude = latitude.toDouble()
+            this.longitude = longitude.toDouble()
+        }
+    } else {
+        null
+    }
     val viewState by viewModel.state.collectAsState()
     val tabs = listOf<String>( "Occurred", "Upcoming", "All")
     val selectedTab = remember { mutableStateOf("Occurred")}
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.reloadReminders(selectedTab.value)
+        viewModel.reloadReminders(selectedTab.value, location)
     }
 
 
@@ -53,7 +62,7 @@ fun ReminderCardList(
                     selected = index == selectedIndex,
                     onClick = {
                         selectedTab.value = tabName
-                        viewModel.reloadReminders(tabName)
+                        viewModel.reloadReminders(tabName, location)
                     }
                 ) {
                     ChoiceChipContent(
@@ -68,7 +77,8 @@ fun ReminderCardList(
             list = viewState.reminders,
             navController = navController,
             tabSelected = selectedTab.value,
-            viewModel = viewModel
+            viewModel = viewModel,
+            location = location
         )
 
     }
@@ -79,6 +89,7 @@ private fun ReminderList(
     list: List<Reminder>,
     navController: NavController,
     tabSelected: String,
+    location: Location?,
     viewModel: ReminderCardListViewModel
 ) {
 
@@ -94,6 +105,7 @@ private fun ReminderList(
                     modifier = Modifier.fillParentMaxWidth(),
                     navController = navController,
                     tabSelected = tabSelected,
+                    location = location,
                     viewModel = viewModel
                 )
 
@@ -108,7 +120,8 @@ private fun ReminderListItem(
     modifier: Modifier = Modifier,
     tabSelected: String,
     navController: NavController,
-    viewModel: ReminderCardListViewModel
+    viewModel: ReminderCardListViewModel,
+    location: Location?
 ) {
     ConstraintLayout(modifier = modifier.clickable { onClick() }) {
         val (divider, reminderTitle, reminderCategory, editIcon, deleteIcon, date) = createRefs()
@@ -195,7 +208,7 @@ private fun ReminderListItem(
         }
         //icon
         IconButton(
-            onClick = {viewModel.deleteReminder(reminder.reminderId, tabName = tabSelected)},
+            onClick = {viewModel.deleteReminder(reminder.reminderId, tabName = tabSelected, location)},
             modifier = Modifier
                 .size(50.dp)
                 .padding(6.dp)

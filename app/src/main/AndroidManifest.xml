@@ -4,7 +4,9 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -16,7 +18,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MobileComputingProject"
         android:name=".MobileCompApp"
-        tools:targetApi="31">
+        tools:targetApi="s">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="<Insert API Key here>" />
+        <receiver android:name="fi.dy.ose.mobilecomputing.ui.reminder.GeofenceBroadcastReceiver">
+        </receiver>
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"

@@ -1,26 +1,25 @@
 package fi.dy.ose.mobilecomputing.ui.home
 
 import android.annotation.SuppressLint
+import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.maps.model.LatLng
 import fi.dy.ose.mobilecomputing.R
-import fi.dy.ose.mobilecomputing.data.entity.Category
-import fi.dy.ose.mobilecomputing.data.entity.Reminder
+import fi.dy.ose.mobilecomputing.ui.Graph
 import fi.dy.ose.mobilecomputing.ui.home.reminderCard.ReminderCardList
+import java.util.*
 
 @Composable
 fun Home(
@@ -42,6 +41,14 @@ fun Home(
 fun HomeContent(
     navController: NavController,
 ) {
+    val latitudeHome = remember { mutableStateOf<Float?>(null)  }
+    val longitudeHome = remember { mutableStateOf<Float?>(null)  }
+    val locationData = navController.currentBackStackEntry?.savedStateHandle?.get<LatLng>("location_data")
+    if (locationData != null) {
+        latitudeHome.value = locationData.latitude.toFloat()
+        longitudeHome.value = locationData.longitude.toFloat()
+        navController.currentBackStackEntry?.savedStateHandle?.set("location_data", null)
+    }
     Scaffold(
         modifier = Modifier.padding(bottom = 24.dp),
         floatingActionButton = {
@@ -66,20 +73,27 @@ fun HomeContent(
 
             HomeAppBar(
                 backgroundColor = appBarColor,
+                latitude = latitudeHome,
+                longitude = longitudeHome,
                 navController = navController
             )
             ReminderCardList(
                 modifier = Modifier.fillMaxSize(),
-                navController = navController
+                navController = navController,
+                latitude = latitudeHome.value,
+                longitude = longitudeHome.value
             )
             
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HomeAppBar(
     backgroundColor: Color,
+    latitude: MutableState<Float?>,
+    longitude: MutableState<Float?>,
     navController: NavController
 ) {
     TopAppBar(
@@ -94,8 +108,29 @@ private fun HomeAppBar(
         },
         backgroundColor = backgroundColor,
         actions = {
-            IconButton(onClick = { /*TODO*/ }) {
-//                Icon(imageVector = Icons.Filled., contentDescription = stringResource(R.string.refresh))
+            Text(text = if (latitude.value != null && longitude.value != null) {
+                String.format(
+                    Locale.getDefault(),
+                    "Lat: %1$.2f, Lng: %2$.2f",
+                    latitude.value,
+                    longitude.value
+                )
+            } else {
+                "Set virtual location"
+            }, modifier = Modifier.combinedClickable(
+                onClick = {},
+                onLongClick = {
+                    latitude.value = null
+                    longitude.value = null
+                    Toast.makeText(Graph.appContext, "Cleared virtual location", Toast.LENGTH_SHORT).show()
+                }
+            )
+
+            )
+            IconButton(
+                onClick = { navController.navigate(route = "map") }
+            ) {
+                Icon(imageVector = Icons.Filled.LocationOn, contentDescription = "Set virtual location")
 
             }
             IconButton(onClick = { navController.navigate(route = "profile") }) {

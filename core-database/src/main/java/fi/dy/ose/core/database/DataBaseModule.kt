@@ -28,6 +28,6 @@ class DataBaseModule {
             appContext,
             AppDatabase::class.java,
             "appDB"
-        ).allowMainThreadQueries().build()
+        ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
     }
 }
